@@ -21,6 +21,17 @@ class PlayerService:
 
         return players
 
+    def get_player_names(self, is_admin):
+        # Returns the name of every player. Admins get first and last names;
+        # regular users get first names only (last names are never selected).
+        name_columns = "nameFirst, nameLast" if is_admin else "nameFirst"
+        query = "SELECT {} FROM players".format(name_columns)
+        rows = self.cursor.execute(query).fetchall()
+
+        if is_admin:
+            return [{"nameFirst": first, "nameLast": last} for first, last in rows]
+        return [{"nameFirst": first} for (first,) in rows]
+
     def search_by_player(self, player_id):
 
         query = "SELECT * FROM players WHERE playerId='{}'".format(player_id)

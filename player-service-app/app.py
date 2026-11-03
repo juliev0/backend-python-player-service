@@ -1,6 +1,6 @@
 import ollama
 import pandas as pd
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from sqlalchemy import create_engine
 
 from app_paths import PLAYER_CSV, PLAYER_DB
@@ -22,9 +22,13 @@ ensure_player_db()
 
 @app.route("/v1/players", methods=["GET"])
 def get_players():
+    # Only an explicit isAdmin=true (case-insensitive) grants admin visibility;
+    # a missing or any other value is treated as a regular user.
+    is_admin = request.args.get("isAdmin", "false").lower() == "true"
+
     player_service = PlayerService()
-    result = player_service.get_all_players()
-    return result
+    result = player_service.get_player_names(is_admin)
+    return jsonify(result)
 
 
 @app.route("/v1/players/<string:player_id>")
